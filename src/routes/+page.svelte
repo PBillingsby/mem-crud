@@ -22,10 +22,9 @@
 				(value: object) => Object.keys(value).length !== 0
 			);
 
-			console.log(data);
-			// localStorage.setItem("posts", JSON.stringify(data));
 			posts.set(data as any);
 			tags = [...new Set(data.flatMap((post) => post.categories))];
+			console.log(tags);
 			loading = false;
 		} catch (error) {
 			console.error("Error fetching data:", error);
@@ -34,15 +33,13 @@
 	// Function to handle tag selection
 	function handleTagSelect(event: any) {
 		selectedTag = event.target.value;
-		data = data;
+		data = $posts;
 		if (event.target.value === "") {
-			data = data || "";
+			data = $posts;
 		} else {
 			data = data.filter((obj) => obj.categories.includes(selectedTag));
 		}
 	}
-
-	console.log($posts);
 </script>
 
 <div class="w-full p-4">
