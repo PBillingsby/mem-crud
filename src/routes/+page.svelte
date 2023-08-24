@@ -24,12 +24,12 @@
 
 			posts.set(data as any);
 			tags = [...new Set(data.flatMap((post) => post.categories))];
-			console.log(tags);
 			loading = false;
 		} catch (error) {
 			console.error("Error fetching data:", error);
 		}
 	});
+
 	// Function to handle tag selection
 	function handleTagSelect(event: any) {
 		selectedTag = event.target.value;

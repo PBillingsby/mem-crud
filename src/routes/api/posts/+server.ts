@@ -4,7 +4,7 @@ import axios from "axios";
 export async function GET({ request }: { request: Request }) {
   const result = (
     await axios.get(
-      "https://api.mem.tech/api/state/Cn9Kft63zDpHnPZ-aPPWWKZRGU1vm9fKVjpxCVuasKQ", {
+      "https://api.mem.tech/api/state/VWPW_NwscxexXJ3IcV97O8bIchZ97vEJ1hsOfycBZWw", {
       headers: {
         'Content-Type': 'application/json',
         'Access-Control-Allow-Origin': 'http://localhost:5173'
@@ -13,7 +13,6 @@ export async function GET({ request }: { request: Request }) {
     )
   )?.data;
 
-  console.log("--------", result)
   return new Response(JSON.stringify({
     data: result.posts
   }), {
@@ -53,10 +52,6 @@ export async function POST({ request }: { request: Request }) {
 export async function PUT({ request }: { request: Request }) {
   const data = await request.json();
 
-  console.log("DATA ", {
-    functionId: data.functionId,
-    inputs: [data]
-  })
   const result = (
     await axios.post(
       "https://api.mem.tech/api/transactions",
@@ -87,7 +82,7 @@ export async function DELETE({ request }: { request: Request }) {
       "https://api.mem.tech/api/transactions",
       {
         data: {
-          functionId: "Cn9Kft63zDpHnPZ-aPPWWKZRGU1vm9fKVjpxCVuasKQ",
+          functionId: "VWPW_NwscxexXJ3IcV97O8bIchZ97vEJ1hsOfycBZWw",
           inputs: [data]
         }
       }

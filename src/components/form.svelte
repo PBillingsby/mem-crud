@@ -78,7 +78,7 @@
       const req = await axios[isEdit ? "put" : "post"](
         "/api/posts",
         {
-          functionId: "Cn9Kft63zDpHnPZ-aPPWWKZRGU1vm9fKVjpxCVuasKQ",
+          functionId: "VWPW_NwscxexXJ3IcV97O8bIchZ97vEJ1hsOfycBZWw",
           input: {
             function: func,
             data: {
@@ -98,6 +98,7 @@
         }
       );
       loading = false;
+
       return req.data;
     } catch (error) {
       console.log(error);
@@ -124,7 +125,6 @@
   }
 
   async function requestSignature() {
-    console.log("------ ", pid);
     try {
       const signer = provider.getSigner();
       signature = await signer.signMessage(

@@ -52,8 +52,6 @@
   onDestroy(() => {
     localStorage.removeItem("post");
   });
-
-  debugger;
 </script>
 
 <div class="w-full p-4">

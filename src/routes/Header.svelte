@@ -12,7 +12,6 @@
 	});
 
 	async function connectToMetaMask() {
-		console.log(window.ethereum);
 		if (window.ethereum) {
 			// await window.ethereum.request({ method: "eth_requestAccounts" });
 			provider = new ethers.providers.Web3Provider(window.ethereum);
