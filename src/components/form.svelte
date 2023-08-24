@@ -9,20 +9,37 @@
   let provider: any;
   let connectedAccount: string | undefined;
   let signature = "";
+
+  // loading state
   let loading = false;
 
-  // Form data handling
-  export let title: string = "";
-  const markdown = writable("");
-  let tagInput: string = "";
-  let description: string = "";
-  let tags: string[] = ["hey"];
+  export let isEdit: boolean = false;
+  export let pid: number = -1;
+  const postJSON = localStorage.getItem("post");
+  let post: any = {};
 
+  if (postJSON !== null) {
+    try {
+      post = JSON.parse(postJSON);
+    } catch (error) {
+      console.error("Error parsing JSON:", error);
+    }
+  }
+  // Form data handling
+  let title: string = isEdit ? post.title : "";
+  const markdown = writable("");
+  let description: string = isEdit ? post.description : "";
+  let tags: string[] = isEdit ? post.categories : [];
+  let tagInput: string = "";
+
+  if (!isEdit && !$markdown && localStorage.getItem("markdown")) {
+    markdown.set(localStorage.getItem("markdown") || "");
+  }
   // Tag functionality
   function addTag() {
     if (tags.includes(tagInput) || tags.length >= 4) return;
     if (tagInput.trim() !== "") {
-      tags = [...tags, tagInput.trim()];
+      tags = [...tags, tagInput.trim().toLowerCase()];
       tagInput = "";
     }
   }
@@ -41,14 +58,13 @@
 
   function handleClear() {
     markdown.set("");
-    localStorage.clear();
+    localStorage.removeItem("markdown");
     window.location.reload();
   }
 
   // POST to MEM
   async function handleSubmit(event: Event) {
     event.preventDefault();
-    debugger;
     loading = true;
     try {
       if (signature && connectedAccount) return;
@@ -58,22 +74,22 @@
     }
 
     try {
-      const req = await axios.post(
-        "https://api.mem.tech/api/transactions",
+      const func: string = isEdit ? "updatePost" : "createPost";
+      const req = await axios[isEdit ? "put" : "post"](
+        "/api/posts",
         {
-          functionId: "kaIO8XpZX5OgkCPVkrfq38UIaq9Ipfiz3ma6VJdK-ow",
-          inputs: [
-            {
-              function: "createPost",
-              data: {
-                author: connectedAccount,
-                description,
-                title,
-                content: markdown,
-                tags,
-              },
+          functionId: "Cn9Kft63zDpHnPZ-aPPWWKZRGU1vm9fKVjpxCVuasKQ",
+          input: {
+            function: func,
+            data: {
+              author: connectedAccount,
+              description: description,
+              title: title,
+              content: $markdown,
+              categories: tags,
+              ...(isEdit ? { pid: pid } : {}),
             },
-          ],
+          },
         },
         {
           headers: {
@@ -81,6 +97,7 @@
           },
         }
       );
+      loading = false;
       return req.data;
     } catch (error) {
       console.log(error);
@@ -107,9 +124,12 @@
   }
 
   async function requestSignature() {
+    console.log("------ ", pid);
     try {
       const signer = provider.getSigner();
-      signature = await signer.signMessage("Sign to post to MEM");
+      signature = await signer.signMessage(
+        `Sign to ${isEdit ? "edit" : "create"} post ${pid !== -1 ? pid : ""}`
+      );
     } catch (error) {
       console.error("Error while requesting signature:", error);
       return;
@@ -132,21 +152,21 @@
       <p class="text-center">...loading</p>
     </span>
   {:else}
-    <form class="p-4 md:flex mx-auto mt-12">
-      <div class="w-full">
+    <form class="p-4 mt-12 text-center">
+      <div>
         <label class="block text-black text-lg font-semibold mb-2" for="content"
           >Content</label
         >
         <textarea
           on:input={handleMarkdown}
-          value={localStorage.getItem("markdown")}
-          rows={14}
-          cols={100}
-          class="text-black p-2 border border-gray-400 rounded-md w-auto"
+          value={isEdit ? post.content : localStorage.getItem("markdown")}
+          class={`text-black p-2 border border-gray-400 rounded-md ${
+            isEdit ? "w-[60vw]" : "w-[90vw]"
+          } h-[45vh] overflow-scroll`}
           id="markdown"
         />
       </div>
-      <div class="w-full gap-2 text-center">
+      <div class="flex gap-2 mx-auto justify-center">
         <div class="mb-4">
           <label class="block text-black text-lg font-semibold mb-2" for="title"
             >Title</label
@@ -154,6 +174,7 @@
           <input
             type="text"
             id="title"
+            placeholder="eg - Intro to Arweave"
             bind:value={title}
             class="px-3 py-2 border rounded-lg focus:outline-none focus:ring border-gray-400"
           />
@@ -168,79 +189,77 @@
           <input
             type="text"
             id="description"
+            placeholder="eg - Guide to Arweave"
             bind:value={description}
             class="px-3 py-2 border rounded-lg focus:outline-none focus:ring border-gray-400"
           />
         </div>
         <div>
+          <label class="text-black text-lg font-semibold mb-2" for="tags"
+            >Tags</label
+          >
           <div class="mb-4">
-            <label
-              class="block text-black text-lg font-semibold mb-2"
-              for="tags">Tags</label
+            <input
+              type="text"
+              bind:value={tagInput}
+              class="px-3 py-2 border rounded-lg focus:outline-none focus:ring border-gray-400"
+              placeholder="Add a tag"
+            />
+            <button
+              type="button"
+              class="text-black text-center items-center font-bold px-3 py-1 rounded"
+              on:click={addTag}
             >
-            <div>
-              <input
-                type="text"
-                bind:value={tagInput}
-                class="ml-16 px-3 py-2 border rounded-lg focus:outline-none focus:ring border-gray-400"
-                placeholder="Add a tag"
-              />
-              <button
-                type="button"
-                class="text-black text-center font-bold px-3 py-1 rounded"
-                on:click={addTag}
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                class="icon icon-tabler icon-tabler-plus"
+                width="30"
+                height="30"
+                viewBox="0 0 24 24"
+                stroke="black"
+                stroke-width="1.5"
+                fill="none"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                ><path stroke="none" d="M0 0h24v24H0z" fill="none" /><line
+                  x1="12"
+                  y1="5"
+                  x2="12"
+                  y2="19"
+                /><line x1="5" y1="12" x2="19" y2="12" /></svg
               >
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  class="icon icon-tabler icon-tabler-plus"
-                  width="30"
-                  height="30"
-                  viewBox="0 0 24 24"
-                  stroke="#e2e8f0"
-                  stroke-width="1.5"
-                  fill="none"
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  ><path stroke="none" d="M0 0h24v24H0z" fill="none" /><line
-                    x1="12"
-                    y1="5"
-                    x2="12"
-                    y2="19"
-                  /><line x1="5" y1="12" x2="19" y2="12" /></svg
-                >
-              </button>
-              <div class="flex flex-wrap gap-2">
-                {#each tags as tag, index (tag)}
-                  <div class="py-2 items-center mb-2">
-                    <div
-                      class="text-black flex flex-wrap rounded-lg px-2 py-1 border border-black"
+            </button>
+            <div class="flex flex-wrap gap-2 p-2">
+              {#each tags as tag, index (tag)}
+                <div class="py-2 items-center mb-2">
+                  <div
+                    class="text-black flex flex-wrap rounded-lg px-2 py-1 border border-black"
+                  >
+                    <span>{tag}</span>
+                    <button
+                      type="button"
+                      class="ml-2"
+                      on:click={() => removeTag(index)}
                     >
-                      <span>{tag}</span>
-                      <button
-                        type="button"
-                        class="ml-2"
-                        on:click={() => removeTag(index)}
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        width="20"
+                        height="20"
+                        viewBox="0 0 24 24"
+                        stroke="black"
+                        stroke-width="1.5"
+                        fill="none"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
                       >
-                        <svg
-                          xmlns="http://www.w3.org/2000/svg"
-                          width="20"
-                          height="20"
-                          viewBox="0 0 24 24"
-                          stroke="black"
-                          stroke-width="1.5"
-                          fill="none"
-                          stroke-linecap="round"
-                          stroke-linejoin="round"
-                        >
-                          <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-                          <line x1="18" y1="6" x2="6" y2="18" />
-                          <line x1="6" y1="6" x2="18" y2="18" />
-                        </svg>
-                      </button>
-                    </div>
+                        <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+                        <line x1="18" y1="6" x2="6" y2="18" />
+                        <line x1="6" y1="6" x2="18" y2="18" />
+                      </svg>
+                    </button>
                   </div>
-                {/each}
-              </div>
+                </div>
+              {/each}
             </div>
           </div>
         </div>
@@ -248,19 +267,21 @@
     </form>
     <div class="drawer drawer-end m-0">
       <input id="my-drawer" type="checkbox" class="drawer-toggle" />
-      <div class="drawer-content">
+      <div class="drawer-content flex mx-auto gap-2">
         <label
           for="my-drawer"
           class="hover:bg-gray-300 bg-white btn border-gray-400 text-black font-bold py-2 rounded focus:outline-none focus:shadow-outline drawer-button"
           >Preview</label
         >
-        <button
-          on:click={handleClear}
-          type="button"
-          class="mx-auto hover:bg-gray-300 bg-white btn border-gray-400 text-black font-bold py-2 rounded focus:outline-none focus:shadow-outline"
-        >
-          Clear
-        </button>
+        {#if !isEdit}
+          <button
+            on:click={handleClear}
+            type="button"
+            class="mx-auto hover:bg-gray-300 bg-white btn border-gray-400 text-black font-bold py-2 rounded focus:outline-none focus:shadow-outline"
+          >
+            Clear
+          </button>
+        {/if}
         <button
           on:click={handleSubmit}
           class="mx-auto hover:bg-gray-300 bg-white btn border-gray-400 text-black font-bold py-2 rounded focus:outline-none focus:shadow-outline"

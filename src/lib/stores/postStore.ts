@@ -1,5 +1,4 @@
 import { writable } from 'svelte/store';
-import { dummyData } from '../../utils/dummyData';
 // Define the Posts interface
 interface Post {
   id: number;
@@ -7,8 +6,9 @@ interface Post {
   title: string;
   description: string;
   content: string;
-  tags: string[];
+  categories: string[];
 }
 
 // Create the writable store
-export const posts = writable<Post[]>(dummyData);
+export const posts = writable([]);
+

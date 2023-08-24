@@ -3,3 +3,5 @@ export const load = ({ params }: any) => {
     slug: params.slug
   }
 }
+
+export const ssr = false; 
