@@ -15,6 +15,7 @@
 
   if (postFromStore !== undefined) {
     localStorage.setItem("post", JSON.stringify(postFromStore));
+    localStorage.removeItem("markdown");
   }
 
   let post =

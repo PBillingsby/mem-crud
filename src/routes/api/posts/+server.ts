@@ -26,6 +26,7 @@ export async function GET({ request }: { request: Request }) {
 export async function POST({ request }: { request: Request }) {
   const data = await request.json();
 
+  console.log(data)
   const result = (
     await axios.post(
       "https://api.mem.tech/api/transactions",
@@ -67,6 +68,9 @@ export async function PUT({ request }: { request: Request }) {
       }
     )
   )?.data;
+
+  console.log(result.data.execution.state.posts)
+
 
   return new Response(JSON.stringify({
     response: result

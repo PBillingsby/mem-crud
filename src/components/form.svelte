@@ -12,8 +12,9 @@
 
   // loading state
   let loading = false;
-
+  let saved = false;
   export let isEdit: boolean = false;
+
   export let pid: number = -1;
   const postJSON = localStorage.getItem("post");
   let post: any = {};
@@ -34,6 +35,8 @@
 
   if (!isEdit && !$markdown && localStorage.getItem("markdown")) {
     markdown.set(localStorage.getItem("markdown") || "");
+  } else {
+    markdown.set(post.content);
   }
   // Tag functionality
   function addTag() {
@@ -53,7 +56,14 @@
     const target = e.target as HTMLInputElement;
     markdown.set(target.value);
     marked.parse($markdown);
+  }
+
+  function saveMarkdown() {
+    saved = true;
     localStorage.setItem("markdown", $markdown);
+    setTimeout(() => {
+      saved = false;
+    }, 3000);
   }
 
   function handleClear() {
@@ -75,7 +85,7 @@
 
     try {
       const func: string = isEdit ? "updatePost" : "createPost";
-      const req = await axios[isEdit ? "put" : "post"](
+      const req = await axios[isEdit ? "post" : "post"](
         "/api/posts",
         {
           functionId: "VWPW_NwscxexXJ3IcV97O8bIchZ97vEJ1hsOfycBZWw",
@@ -283,6 +293,20 @@
           </button>
         {/if}
         <button
+          on:click={saveMarkdown}
+          type="button"
+          class="mx-auto hover:bg-gray-300 bg-white btn border-gray-400 text-black font-bold py-2 rounded focus:outline-none focus:shadow-outline"
+        >
+          Save
+        </button>
+        <div
+          class={`${saved ? "visible" : "hidden"} toast toast-top toast-end`}
+        >
+          <div class="alert alert-success flex">
+            <span>Saved</span>
+          </div>
+        </div>
+        <button
           on:click={handleSubmit}
           class="mx-auto hover:bg-gray-300 bg-white btn border-gray-400 text-black font-bold py-2 rounded focus:outline-none focus:shadow-outline"
         >
@@ -292,11 +316,11 @@
       <div class="drawer-side h-full">
         <label for="my-drawer" class="drawer-overlay" />
         <ul
-          class="menu bg-white w-[70vw] px-12 overflow-scroll h-full text-base-content"
+          class="menu bg-white px-12 overflow-scroll h-full text-base-content prose"
         >
           {#if $markdown || localStorage.getItem("markdown")}
             <article
-              class="bg-white text-black rounded-lg p-6 mx-auto prose lg:prose-xl"
+              class="prose p-4 w-full bg-[#eee] border border-black rounded-md mx-auto min-h-screen overflow-scroll"
             >
               <SvelteMarkdown
                 source={marked.parse(

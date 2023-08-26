@@ -51,9 +51,19 @@ textarea {
 /* Optionally, you can adjust the font size for headers as well */
 .prose h1,
 .prose h2,
-.prose h3 {
-	font-size: 2rem;
+.prose h3,
+.prose h4,
+.prose h5,
+.prose h6,
+.prose strong,
+.prose li::marker,
+.prose ul,
+.prose table,
+.prose th,
+.prose a {
+	/* font-size: 2rem; */
 	color: black;
+	padding: 0;
 }
 
 .prose p,

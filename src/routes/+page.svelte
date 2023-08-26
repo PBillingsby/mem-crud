@@ -21,7 +21,7 @@
 			data = response.data?.filter(
 				(value: object) => Object.keys(value).length !== 0
 			);
-
+			console.log(data);
 			posts.set(data as any);
 			tags = [...new Set(data.flatMap((post) => post.categories))];
 			loading = false;
@@ -40,6 +40,8 @@
 			data = data.filter((obj) => obj.categories.includes(selectedTag));
 		}
 	}
+
+	console.log($posts);
 </script>
 
 <div class="w-full p-4">
