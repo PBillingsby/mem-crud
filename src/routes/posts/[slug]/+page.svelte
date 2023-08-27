@@ -37,7 +37,7 @@
       const res = await axios.delete(`/api/posts`, {
         data: {
           function: "removePost",
-          pid: data.slug,
+          pid: post.pid,
           author: localStorage.user,
         },
       });
@@ -73,7 +73,7 @@
     <div class="border border-gray-400 rounded-md min-h-[80vh] p-4">
       <span class="flex justify-between">
         <div>
-          <h1 class="text-2xl font-semibold mb-4">{post?.title}</h1>
+          <h1 class="text-2xl font-semibold mb-4">Title: {post?.title}</h1>
           <p class="text-xl text-gray-700 mb-4">
             Description: {post?.description}
           </p>
@@ -154,7 +154,7 @@
               <div class="drawer-side">
                 <label for="my-drawer-4" class="drawer-overlay" />
                 <ul class="menu p-4 w-[80vw] h-full bg-white text-base-content">
-                  <Form isEdit={true} pid={data.slug} />
+                  <Form isEdit={true} pid={post?.pid} />
                 </ul>
               </div>
             </div>

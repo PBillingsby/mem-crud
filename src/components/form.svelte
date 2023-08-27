@@ -15,7 +15,6 @@
   let saved = false;
   export let isEdit: boolean = false;
 
-  export let pid: number = -1;
   const postJSON = localStorage.getItem("post");
   let post: any = {};
 
@@ -75,6 +74,7 @@
   // POST to MEM
   async function handleSubmit(event: Event) {
     event.preventDefault();
+
     loading = true;
     try {
       if (signature && connectedAccount) return;
@@ -88,7 +88,7 @@
       const req = await axios[isEdit ? "post" : "post"](
         "/api/posts",
         {
-          functionId: "VWPW_NwscxexXJ3IcV97O8bIchZ97vEJ1hsOfycBZWw",
+          functionId: "a2NInhFryipmMgoSIp_72huSQPs-4HunozRtrs4PdUE",
           input: {
             function: func,
             data: {
@@ -97,7 +97,7 @@
               title: title,
               content: $markdown,
               categories: tags,
-              ...(isEdit ? { pid: pid } : {}),
+              ...(isEdit ? { pid: post.pid } : {}),
             },
           },
         },
@@ -138,7 +138,9 @@
     try {
       const signer = provider.getSigner();
       signature = await signer.signMessage(
-        `Sign to ${isEdit ? "edit" : "create"} post ${pid !== -1 ? pid : ""}`
+        `Sign to ${isEdit ? "edit" : "create"} post ${
+          post.pid !== -1 ? post.pid : ""
+        }`
       );
     } catch (error) {
       console.error("Error while requesting signature:", error);
